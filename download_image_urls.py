@@ -1,8 +1,10 @@
 import os
 from typing import List, Dict
-from search_bing_api import search_images_bing
 
-# I don't have the below .txt file anymore, but I believe it looked something like this:
+from azure.cognitiveservices.search.imagesearch import ImageSearchClient as api
+from msrest.authentication import CognitiveServicesCredentials as auth
+
+# I don't have the nsfw_queries.txt file anymore, but I believe it looked something like this:
 
 """
 sfw
@@ -18,7 +20,25 @@ etc.
 
 search_query_file = "../nsfw_queries.txt"
 key = os.environ.get("AZURE_SEARCH_KEY")
+endpoint = "https://imageserach.cognitiveservices.azure.com/"
 
+def search_bing_images(
+    key: str, term: str, min_sz: int = 460, count: int = 50
+) -> List[str]:
+    client = api(endpoint, auth(key))
+    image_results = client.images.search(
+        query=term, count=count, min_height=min_sz, min_width=min_sz, safe_search="off"
+    )
+    # return image_results
+    if image_results.value:
+        print(
+            f"Total number of image urls returned for query {term}: {len(image_results.value)}"
+        )
+        image_urls = [img.content_url for img in image_results.value]
+        return image_urls
+    else:
+        print("No image results returned!")
+        return []
 
 def download_urls(file_path: str, cat_prefix: str) -> Dict[str, List[str]]:
     # Get search terms from file, save results as a Dict
@@ -32,7 +52,7 @@ def download_urls(file_path: str, cat_prefix: str) -> Dict[str, List[str]]:
                 subcategory_urls = []
             else:
                 # Fetch image urls pertaining to subcategory
-                query_urls = search_images_bing(key, query)
+                query_urls = search_bing_images(key, query)
                 subcategory_urls.extend(query_urls)
                 # Save dict containing {dir_path : [img_urls]}
                 result_dict[subcategory] = subcategory_urls
