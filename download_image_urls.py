@@ -22,6 +22,7 @@ search_query_file = "../nsfw_queries.txt"
 key = os.environ.get("AZURE_SEARCH_KEY")
 endpoint = "https://imageserach.cognitiveservices.azure.com/"
 
+
 def search_bing_images(
     key: str, term: str, min_sz: int = 460, count: int = 50
 ) -> List[str]:
@@ -39,6 +40,7 @@ def search_bing_images(
     else:
         print("No image results returned!")
         return []
+
 
 def download_urls(file_path: str, cat_prefix: str) -> Dict[str, List[str]]:
     # Get search terms from file, save results as a Dict
